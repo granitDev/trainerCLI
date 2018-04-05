@@ -8,19 +8,47 @@ exConfig.read("exercises.ini")
 
 #for arg in sys.argv:
 g_exList = []
+
+def getRandEx(exList):
+    return exList[randint(0, (len(exList)-1))]
+
+def getExerise(section):
+    global exConfig
+    lastList = []
+    exList = []
+    exercise = ""
+    try:
+        with open("last.log","r") as f:
+            for line in f:
+                line = line[:-1]
+                lastList.append(line)
+    except (OSError, IOError) as e:
+        print(e)
+        
+    for item in exConfig[section]:
+        exList.append(item)
+    exercise = getRandEx(exList)
+    while exercise in lastList:
+        #print("last: ", exercise)
+        exercise = getRandEx(exList)
+    return exercise
     
-def getExerises():
-    global g_exList
+def buildWorkout():
+    global g_exList, exConfig
     for sec in exConfig.sections():
         if "arm" in sec:
-            tmp = []
-            for item in exConfig[sec]:
-                tmp.append(item)
-            rnd = randint(0, (len(tmp)-1))
-            g_exList.append(tmp[rnd])
-    print(g_exList)
+            g_exList.append(getExerise(sec))
+        if "hand" in sec:
+            g_exList.append(getExerise(sec))
+        if "leg" in sec:
+            g_exList.append(getExerise(sec))
+            #g_exList.append(exConfig[sec].get(exercise))
+    with open("last.log","w+") as f:
+        for ex in g_exList:
+            f.write("%s\n" % ex)
+            print(ex)
 
-getExerises()
+buildWorkout()
 exit()
 
 def main(argv):
